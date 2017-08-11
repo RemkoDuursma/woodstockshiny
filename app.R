@@ -3,6 +3,7 @@ library(leaflet)
 #library(shinythemes)
 library(shinydashboard)
 library(dplyr)
+library(DT)
 locations <- read.csv("data/nursery_locations.csv")
 locations$howmany <- paste(locations$nursery, locations$trees, sep=" ")
 
