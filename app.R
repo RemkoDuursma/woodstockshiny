@@ -31,7 +31,7 @@ server <- function(input, output, session) {
     
   })
   
-  output$treestatsdata <- DT::renderDataTable(datatable(treestats_tab, caption="Data by batch"))
+  output$treestatsdata <- renderTable(treestats_tab)
   
 }
 
@@ -54,7 +54,7 @@ body <- dashboardBody(
     )
   ),
   fluidRow(
-    box(DT::dataTableOutput("treestatsdata"))
+    box(tableOutput("treestatsdata"))
   )
 )
 
