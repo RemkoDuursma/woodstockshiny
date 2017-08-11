@@ -31,7 +31,9 @@ server <- function(input, output, session) {
     
   })
   
-  output$treestatsdata <- renderTable(treestats_tab)
+  output$treestatsdata <- DT::renderDataTable({
+         datatable(treestats_tab)
+  })
   
 }
 
@@ -54,7 +56,7 @@ body <- dashboardBody(
     )
   ),
   fluidRow(
-    box(tableOutput("treestatsdata"))
+    box(DT::dataTableOutput("treestatsdata"))
   )
 )
 
