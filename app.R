@@ -9,9 +9,9 @@ locations$howmany <- paste(locations$nursery, locations$trees, sep=" ")
 treestats <- read.csv("data/tree_stats.csv")
 
 treestats_tab <- dplyr::select(treestats, volume, species, nursery, sizeindex) %>%
-  mutate(sizeindex = round(sizeindex,1),
+  dplyr::mutate(sizeindex = round(sizeindex,1),
          species = Hmisc::capitalize(gsub("_"," ", species))) %>%
-  arrange(species, volume)
+  dplyr::arrange(species, volume)
 
 server <- function(input, output, session) {
   
