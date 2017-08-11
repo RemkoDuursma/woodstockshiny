@@ -8,7 +8,7 @@ treestats_tab <- dplyr::select(treestats, volume, species, nursery, sizeindex) %
          species = Hmisc::capitalize(gsub("_"," ", species))) %>%
   arrange(species, volume)
 
-shinyServer(function(input, output, session) {
+server <- function(input, output, session) {
   
   r_colors <- rgb(t(col2rgb(colors()) / 255))
   names(r_colors) <- colors()
@@ -28,4 +28,4 @@ shinyServer(function(input, output, session) {
   
   output$treestatsdata <- DT::renderDataTable(datatable(treestats_tab, caption="Data by batch"))
   
-})
+}
