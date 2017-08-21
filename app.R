@@ -67,7 +67,7 @@ server <- function(input, output, session) {
   
 header <- dashboardHeader(
   title = tags$a(href='https://www.westernsydney.edu.au/hie',
-                 tags$img(src='wsu_badge_invert_small.png'),
+                 tags$img(src='WSU_badge_invert_small.png'),
                   tags$style(HTML('.skin-black .main-header .logo {
                               background-color: #9F2137;
                               }
