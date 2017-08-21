@@ -47,13 +47,13 @@ server <- function(input, output, session) {
       scale_x_log10(limits=c(10,5000)) +
       scale_y_log10() +
       geom_polygon_interactive(data=standard_df, aes(x=x, y=y, alpha=0.2, 
-                                                     colour="forestgreen", tooltip="Standard", data_id="1")) +
+                                                     colour="forestgreen", tooltip="AS2303 Standard", data_id="1")) +
       geom_point_interactive(size=2) +
       theme_bw() +
       labs(x="Container volume (L)", y="Size index") +
       theme(legend.position="none")
     
-    ggiraph(code = {print(siplot)}, hover_css = "fill:red;")
+    ggiraph(code = {print(siplot)}, hover_css = "fill:red;", selection_type="none")
     
   })
   
@@ -94,29 +94,44 @@ body <- dashboardBody(
   tabItems(
     tabItem(tabName = "map",
       fluidRow(
-        column(width = 7,
+        column(width = 12,
                box(width = 200, solidHeader = TRUE,
                    title = "Locations of nurseries included in the study",
                    footer= "Zoom with +/-, move the map by dragging",
                    leafletOutput("mymap", height = 500)
                ))),
       fluidRow(
-        column(width=7, 
+        column(width=12, 
                  infoBox("# Nurseries", nrow(locations), icon=icon("info-circle")),
                  infoBox("# Batches", nrow(treestats), icon=icon("group")),
                  infoBox("# Species", length(unique(treestats$species)), icon=icon("tree")))
       )),
     tabItem(tabName ="data",
-      fluidRow(
-        box(solidHeader=TRUE,
+        box(solidHeader=TRUE, width=12,
             title="Information on all batches sampled.",
             DT::dataTableOutput("treestatsdata"))
-      )
     ),
     tabItem(tabName="dataplot",
-            box(solidHeader=TRUE,
-                  title="Size index of all sampled batches.",
-                  ggiraphOutput("dataplot")
+          fluidRow(box(width=12,
+                       p(paste("The plot below shows all sampled batches in the study. The size index",
+                               "is calculated as the calliper (diameter of the seedling) times the height.",
+                               "The colored box is the current standard."))
+                       )),
+          fluidRow(
+            box(solidHeader=TRUE, width=12, #height=750,
+                title="Size index of all sampled batches.",
+                footer="Hover over each point to see the species, container volume, and nursery.",
+                ggiraphOutput("dataplot")
+          ))
+    ),
+    tabItem(tabName="info",
+            fluidRow(
+              box(width=12,
+                h2("Tree Planting Stock Assessment"),
+                p(paste(readLines("data/infotextblock.txt"), collapse="\n")),
+                p(strong(paste("Navigate on the left for a map of all sampled locations,",
+                        "to browse the raw data, or to view a plot of size index")))
+              )
             )
     )
   )
@@ -124,9 +139,10 @@ body <- dashboardBody(
 
 sidebar <- dashboardSidebar(
   sidebarMenu(
+    menuItem("Info", tabName = "info", icon=icon("home")),
     menuItem("Map", tabName = "map", icon = icon("map-o")),
     menuItem("Data", icon = icon("database"), tabName = "data"),
-    menuItem("Results", icon=icon("bar-chart"), tabName="dataplot")
+    menuItem("Results", icon=icon("bar-chart"), tabName="dataplot", badgeLabel = "new", badgeColor = "green")
   )
 )
 
