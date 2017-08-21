@@ -133,7 +133,8 @@ sidebar <- dashboardSidebar(
 ui <- dashboardPage(header,
   sidebar,
   body,
-  skin="black"
+  skin="black",
+  title="Woodstock Browser"
 )
 
 shinyApp(ui, server)
