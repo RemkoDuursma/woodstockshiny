@@ -4,6 +4,10 @@ library(leaflet)
 library(shinydashboard)
 library(dplyr)
 library(DT)
+library(ggiraph)
+library(Hmisc)
+library(scales)
+library(ggplot2)
 locations <- read.csv("data/nursery_locations.csv")
 locations$howmany <- paste(locations$nursery, locations$trees, sep=" ")
 
@@ -11,7 +15,7 @@ treestats <- read.csv("data/tree_stats.csv")
 
 treestats_tab <- dplyr::select(treestats, volume, species, nursery, sizeindex) %>%
   dplyr::mutate(sizeindex = round(sizeindex,1),
-         species = Hmisc::capitalize(gsub("_"," ", species))) %>%
+         species = capitalize(gsub("_"," ", species))) %>%
   dplyr::arrange(species, volume)
 
 server <- function(input, output, session) {
@@ -29,6 +33,27 @@ server <- function(input, output, session) {
                        fillColor = c("white"),
                        fillOpacity = 100,
                        weight=3)
+    
+  })
+  
+  output$dataplot <- renderggiraph({
+    
+    si_means <- readRDS("data/simeans.rds")
+    
+    standard_df <- data.frame(x=c(20,2500,2500,20), y=c(24, 1627, 2393, 37), limit=c("min","min","max","max"),
+                              value="Standard", stringsAsFactors = FALSE)
+    
+    siplot <- ggplot(data=si_means, aes(x=volume, y=sizeindex.mean, tooltip=tooltip, data_id=row.names(si_means))) + 
+      scale_x_log10(limits=c(10,5000)) +
+      scale_y_log10() +
+      geom_polygon_interactive(data=standard_df, aes(x=x, y=y, alpha=0.2, 
+                                                     colour="forestgreen", tooltip="Standard", data_id="1")) +
+      geom_point_interactive(size=2) +
+      theme_bw() +
+      labs(x="Container volume (L)", y="Size index") +
+      theme(legend.position="none")
+    
+    ggiraph(code = {print(siplot)}, hover_css = "fill:red;")
     
   })
   
@@ -69,19 +94,17 @@ body <- dashboardBody(
   tabItems(
     tabItem(tabName = "map",
       fluidRow(
-        column(width = 5,
-               box(width = 300, solidHeader = TRUE,
+        column(width = 7,
+               box(width = 200, solidHeader = TRUE,
                    title = "Locations of nurseries included in the study",
                    footer= "Zoom with +/-, move the map by dragging",
                    leafletOutput("mymap", height = 500)
-               )
-        ),
-        column(width=7,
-               fluidRow(box(p("Some text goes here describing what is to be found here. Like iusb siub ciubviub coish siufsv ojsci cdois  codi scoin."))),
-               fluidRow(infoBox("# Nurseries", nrow(locations), icon=icon("info-circle"))),
-               fluidRow(infoBox("# Batches", nrow(treestats), icon=icon("group"))),
-               fluidRow(infoBox("# Species", length(unique(treestats$species)), icon=icon("tree")))
-        )
+               ))),
+      fluidRow(
+        column(width=7, 
+                 infoBox("# Nurseries", nrow(locations), icon=icon("info-circle")),
+                 infoBox("# Batches", nrow(treestats), icon=icon("group")),
+                 infoBox("# Species", length(unique(treestats$species)), icon=icon("tree")))
       )),
     tabItem(tabName ="data",
       fluidRow(
@@ -89,6 +112,12 @@ body <- dashboardBody(
             title="Information on all batches sampled.",
             DT::dataTableOutput("treestatsdata"))
       )
+    ),
+    tabItem(tabName="dataplot",
+            box(solidHeader=TRUE,
+                  title="Size index of all sampled batches.",
+                  ggiraphOutput("dataplot")
+            )
     )
   )
 )
@@ -96,11 +125,12 @@ body <- dashboardBody(
 sidebar <- dashboardSidebar(
   sidebarMenu(
     menuItem("Map", tabName = "map", icon = icon("map-o")),
-    menuItem("Data", icon = icon("database"), tabName = "data")
+    menuItem("Data", icon = icon("database"), tabName = "data"),
+    menuItem("Results", icon=icon("bar-chart"), tabName="dataplot")
   )
 )
 
-ui <- dashboardPage(  header,
+ui <- dashboardPage(header,
   sidebar,
   body,
   skin="black"
