@@ -97,14 +97,9 @@ server <- function(input, output, session) {
   })
 
   output$table_display <- renderPlot({
-    f <- info()
     
     standard_df <- data.frame(x=c(20,2500,2500,20), y=c(24, 1627, 2393, 37), limit=c("min","min","max","max"),
                               value="Standard", stringsAsFactors = FALSE)
-    
-    vol <- as.numeric(f[, input$container_column])
-    diam <- as.numeric(f[, input$calliper_column])
-    height <- as.numeric(f[, input$height_column])
     
     with(standard_df, plot(log10(x), log10(y), type='n', 
                            xlab="Container volume (L)",
@@ -116,7 +111,15 @@ server <- function(input, output, session) {
     with(subset(standard_df, limit == "min"), lines(log10(x), log10(y)))
     with(subset(standard_df, limit == "max"), lines(log10(x), log10(y)))
     
-    points(log10(vol), log10(diam*height), pch=19, col="red")
+    f <- info()
+    
+    if(input$container_column != '')vol <- as.numeric(f[, input$container_column])
+    if(input$calliper_column != '')diam <- as.numeric(f[, input$calliper_column])
+    if(input$height_column != '')height <- as.numeric(f[, input$height_column])
+    
+    if(!('' %in% c(input$container_column,input$calliper_column,input$height_column))){
+      points(log10(vol), log10(diam*height), pch=19, col="red")
+    }
   })
   
 }
