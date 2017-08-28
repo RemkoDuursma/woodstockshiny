@@ -23,17 +23,23 @@ server <- function(input, output, session) {
   r_colors <- rgb(t(col2rgb(colors()) / 255))
   names(r_colors) <- colors()
   
+  locations$popup <- paste(
+    '<strong>Nursery:</strong>', capitalize(as.character(locations$nursery)), '<br>',
+    '<strong>Number of trees:</strong>', locations$trees
+  )
+  
   output$mymap <- renderLeaflet({
-    leaflet() %>% addTiles%>%
-      addCircleMarkers(locations[1:nrow(locations),3],
-                       locations[1:nrow(locations),2],
-                       popup = locations[1:nrow(locations),5],
+    leaflet() %>% 
+      addProviderTiles('CartoDB.Positron') %>% #addTiles%>%
+      addCircleMarkers(lng = locations[1:nrow(locations),3],
+                       lat = locations[1:nrow(locations),2],
+                       clusterOptions = markerClusterOptions(),
+                       popup = locations$popup,
                        col=c(rep("darkgreen",23),"#990033"),
-                       opacity=c(.85),
-                       fillColor = c("white"),
+                       opacity=.85,
+                       fillColor = "white",
                        fillOpacity = 100,
                        weight=3)
-    
   })
   
   output$dataplot <- renderggiraph({
@@ -59,6 +65,55 @@ server <- function(input, output, session) {
   
   output$treestatsdata <- DT::renderDataTable({
          datatable(treestats_tab)
+  })
+  
+  info <- eventReactive(input$uploadedfile, {
+    
+
+    req(input$uploadedfile)
+    
+    # Changes in read.table 
+    
+    fext <- tools::file_ext(input$uploadedfile)
+    
+    if(fext == "csv"){
+      df <- read.csv(input$uploadedfile$datapath)
+    } 
+    if(fext %in% c("xls","xlsx")){
+      df <- readxl::read_excel(input$uploadedfile$datapath)
+    }
+    
+    vars <- names(df)
+    
+    # Update select input immediately after clicking on the action button. 
+    updateSelectInput(session, "container_column","Column with container volume (L):", choices = vars)
+    updateSelectInput(session, "calliper_column","Column with calliper (mm):", choices = vars)
+    updateSelectInput(session, "height_column","Column with height (m):", choices = vars)
+    
+    df
+  })
+
+  output$table_display <- renderPlot({
+    f <- info()
+    
+    standard_df <- data.frame(x=c(20,2500,2500,20), y=c(24, 1627, 2393, 37), limit=c("min","min","max","max"),
+                              value="Standard", stringsAsFactors = FALSE)
+    
+    vol <- as.numeric(f[, input$container_column])
+    diam <- as.numeric(f[, input$calliper_column])
+    height <- as.numeric(f[, input$height_column])
+    
+    with(standard_df, plot(log10(x), log10(y), type='n', 
+                           xlab="Container volume (L)",
+                           ylab="Size index (height * calliper)",
+                           axes=FALSE, 
+                           xlim=log10(c(10,5000)),
+                           ylim=log10(c(10,2000))))
+    magaxis(side=1:2, unlog=1:2)
+    with(subset(standard_df, limit == "min"), lines(log10(x), log10(y)))
+    with(subset(standard_df, limit == "max"), lines(log10(x), log10(y)))
+    
+    #points(log10(vol), log10(diam*height), pch=19, col="red")
   })
   
 }
@@ -133,7 +188,26 @@ body <- dashboardBody(
                         "to browse the raw data, or to view a plot of size index")))
               )
             )
-    )
+    ),
+    
+    tabItem(tabName="testdata",
+            fluidRow(
+              box(width=12,
+                  fileInput("uploadedfile", "Choose Excel or CSV File",
+                            multiple = FALSE,
+                            accept = c("text/csv",
+                                       "text/comma-separated-values,text/plain",
+                                       ".csv", ".xlsx", ".xls")),
+                  selectInput("container_column", "Column with container volume (L):", choices = NULL), # no choices before uploading 
+                  selectInput("calliper_column", "Column with calliper (mm):", choices = NULL),
+                  selectInput("height_column", "Column with height (m):", choices = NULL),
+                  plotOutput("table_display")
+              )
+              
+              
+              
+            )       
+    )        
   )
 )
 
@@ -142,7 +216,8 @@ sidebar <- dashboardSidebar(
     menuItem("Info", tabName = "info", icon=icon("home")),
     menuItem("Map", tabName = "map", icon = icon("map-o")),
     menuItem("Data", icon = icon("database"), tabName = "data"),
-    menuItem("Results", icon=icon("bar-chart"), tabName="dataplot", badgeLabel = "new", badgeColor = "green")
+    menuItem("Results", icon=icon("bar-chart"), tabName="dataplot"),
+    menuItem("Test your data", icon=icon("question-circle"), tabName="testdata", badgeLabel = "new", badgeColor = "green")
   )
 )
 
