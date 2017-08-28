@@ -8,6 +8,9 @@ library(ggiraph)
 library(Hmisc)
 library(scales)
 library(ggplot2)
+library(tools)
+library(magicaxis)
+library(readxl)
 locations <- read.csv("data/nursery_locations.csv")
 locations$howmany <- paste(locations$nursery, locations$trees, sep=" ")
 
@@ -29,12 +32,12 @@ server <- function(input, output, session) {
   )
   
   output$mymap <- renderLeaflet({
-    leaflet() %>% 
+    leaflet(locations) %>% 
       addProviderTiles('CartoDB.Positron') %>% #addTiles%>%
-      addCircleMarkers(lng = locations[1:nrow(locations),3],
-                       lat = locations[1:nrow(locations),2],
+      addCircleMarkers(lng = ~long,
+                       lat = ~lat,
                        clusterOptions = markerClusterOptions(),
-                       popup = locations$popup,
+                       popup = ~popup,
                        col=c(rep("darkgreen",23),"#990033"),
                        opacity=.85,
                        fillColor = "white",
@@ -74,21 +77,21 @@ server <- function(input, output, session) {
     
     # Changes in read.table 
     
-    fext <- tools::file_ext(input$uploadedfile)
+    fext <- file_ext(input$uploadedfile)
     
     if(fext == "csv"){
       df <- read.csv(input$uploadedfile$datapath)
     } 
     if(fext %in% c("xls","xlsx")){
-      df <- readxl::read_excel(input$uploadedfile$datapath)
+      df <- as.data.frame(read_excel(input$uploadedfile$datapath))
     }
     
     vars <- names(df)
     
     # Update select input immediately after clicking on the action button. 
-    updateSelectInput(session, "container_column","Column with container volume (L):", choices = vars)
-    updateSelectInput(session, "calliper_column","Column with calliper (mm):", choices = vars)
-    updateSelectInput(session, "height_column","Column with height (m):", choices = vars)
+    updateSelectInput(session, "container_column","Column with container volume (L):", choices = vars, selected="")
+    updateSelectInput(session, "calliper_column","Column with calliper (mm):", choices = vars, selected="")
+    updateSelectInput(session, "height_column","Column with height (m):", choices = vars, selected="")
     
     df
   })
@@ -113,7 +116,7 @@ server <- function(input, output, session) {
     with(subset(standard_df, limit == "min"), lines(log10(x), log10(y)))
     with(subset(standard_df, limit == "max"), lines(log10(x), log10(y)))
     
-    #points(log10(vol), log10(diam*height), pch=19, col="red")
+    points(log10(vol), log10(diam*height), pch=19, col="red")
   })
   
 }
