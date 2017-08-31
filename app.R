@@ -1,69 +1,16 @@
-library(shiny)
-library(leaflet)
-#library(shinythemes)
-library(shinydashboard)
-library(dplyr)
-library(DT)
-library(ggiraph)
-library(Hmisc)
-library(scales)
-library(ggplot2)
-library(tools)
-library(magicaxis)
-library(readxl)
-locations <- read.csv("data/nursery_locations.csv")
-locations$howmany <- paste(locations$nursery, locations$trees, sep=" ")
+source("R/load_packages.R")
+source("R/read_data.R")
 
-treestats <- read.csv("data/tree_stats.csv")
 
-treestats_tab <- dplyr::select(treestats, volume, species, nursery, sizeindex) %>%
-  dplyr::mutate(sizeindex = round(sizeindex,1),
-         species = capitalize(gsub("_"," ", species))) %>%
-  dplyr::arrange(species, volume)
 
 server <- function(input, output, session) {
   
-  r_colors <- rgb(t(col2rgb(colors()) / 255))
-  names(r_colors) <- colors()
-  
-  locations$popup <- paste(
-    '<strong>Nursery:</strong>', capitalize(as.character(locations$nursery)), '<br>',
-    '<strong>Number of trees:</strong>', locations$trees
-  )
-  
   output$mymap <- renderLeaflet({
-    leaflet(locations) %>% 
-      addProviderTiles('CartoDB.Positron') %>% #addTiles%>%
-      addCircleMarkers(lng = ~long,
-                       lat = ~lat,
-                       clusterOptions = markerClusterOptions(),
-                       popup = ~popup,
-                       col=c(rep("darkgreen",23),"#990033"),
-                       opacity=.85,
-                       fillColor = "white",
-                       fillOpacity = 100,
-                       weight=3)
+    make_leaflet_map(locations)
   })
   
   output$dataplot <- renderggiraph({
-    
-    si_means <- readRDS("data/simeans.rds")
-    
-    standard_df <- data.frame(x=c(20,2500,2500,20), y=c(24, 1627, 2393, 37), limit=c("min","min","max","max"),
-                              value="Standard", stringsAsFactors = FALSE)
-    
-    siplot <- ggplot(data=si_means, aes(x=volume, y=sizeindex.mean, tooltip=tooltip, data_id=row.names(si_means))) + 
-      scale_x_log10(limits=c(10,5000)) +
-      scale_y_log10() +
-      geom_polygon_interactive(data=standard_df, aes(x=x, y=y, alpha=0.2, 
-                                                     colour="forestgreen", tooltip="AS2303 Standard", data_id="1")) +
-      geom_point_interactive(size=2) +
-      theme_bw() +
-      labs(x="Container volume (L)", y="Size index") +
-      theme(legend.position="none")
-    
-    ggiraph(code = {print(siplot)}, hover_css = "fill:red;", selection_type="none")
-    
+    make_ggiraph_plot(si_means, standard_df)
   })
   
   output$treestatsdata <- DT::renderDataTable({
@@ -72,7 +19,6 @@ server <- function(input, output, session) {
   
   info <- eventReactive(input$uploadedfile, {
     
-
     req(input$uploadedfile)
     
     # Changes in read.table 
@@ -97,29 +43,8 @@ server <- function(input, output, session) {
   })
 
   output$table_display <- renderPlot({
-    
-    standard_df <- data.frame(x=c(20,2500,2500,20), y=c(24, 1627, 2393, 37), limit=c("min","min","max","max"),
-                              value="Standard", stringsAsFactors = FALSE)
-    
-    with(standard_df, plot(log10(x), log10(y), type='n', 
-                           xlab="Container volume (L)",
-                           ylab="Size index (height * calliper)",
-                           axes=FALSE, 
-                           xlim=log10(c(10,5000)),
-                           ylim=log10(c(10,2000))))
-    magaxis(side=1:2, unlog=1:2)
-    with(subset(standard_df, limit == "min"), lines(log10(x), log10(y)))
-    with(subset(standard_df, limit == "max"), lines(log10(x), log10(y)))
-    
     f <- info()
-    
-    if(input$container_column != '')vol <- as.numeric(f[, input$container_column])
-    if(input$calliper_column != '')diam <- as.numeric(f[, input$calliper_column])
-    if(input$height_column != '')height <- as.numeric(f[, input$height_column])
-    
-    if(!('' %in% c(input$container_column,input$calliper_column,input$height_column))){
-      points(log10(vol), log10(diam*height), pch=19, col="red")
-    }
+    comparison_standard_plot(input, f, standard_df)
   })
   
 }
@@ -204,7 +129,7 @@ body <- dashboardBody(
                             accept = c("text/csv",
                                        "text/comma-separated-values,text/plain",
                                        ".csv", ".xlsx", ".xls")),
-                  selectInput("container_column", "Column with container volume (L):", choices = NULL), # no choices before uploading 
+                  selectInput("container_column", "Column with container volume (L):", choices = NULL),  
                   selectInput("calliper_column", "Column with calliper (mm):", choices = NULL),
                   selectInput("height_column", "Column with height (m):", choices = NULL),
                   plotOutput("table_display")
