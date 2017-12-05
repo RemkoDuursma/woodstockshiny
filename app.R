@@ -13,6 +13,15 @@ server <- function(input, output, session) {
     make_ggiraph_plot(si_means, standard_df)
   })
   
+  output$downloadPlot <- downloadHandler(
+    filename = "woodstockplot.png",
+    content = function(file) {
+      png(file)
+      f <- info()
+      comparison_standard_plot(input, f, standard_df)
+      dev.off()
+    })    
+  
   output$treestatsdata <- DT::renderDataTable({
          datatable(treestats_tab)
   })
@@ -23,7 +32,7 @@ server <- function(input, output, session) {
     
     # Changes in read.table 
     
-    fext <- file_ext(input$uploadedfile)
+    fext <- file_ext(input$uploadedfile)[1]
     
     if(fext == "csv"){
       df <- read.csv(input$uploadedfile$datapath)
@@ -132,7 +141,8 @@ body <- dashboardBody(
                   selectInput("container_column", "Column with container volume (L):", choices = NULL),  
                   selectInput("calliper_column", "Column with calliper (mm):", choices = NULL),
                   selectInput("height_column", "Column with height (m):", choices = NULL),
-                  plotOutput("table_display")
+                  plotOutput("table_display"),
+                  downloadButton('downloadPlot', 'Download Plot')
               )
               
               
