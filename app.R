@@ -98,13 +98,15 @@ body <- dashboardBody(
                box(width = 200, solidHeader = TRUE,
                    title = "Locations of nurseries included in the study",
                    footer= "Zoom with +/-, move the map by dragging",
+                   p("Click on the clusters to reveal locations of nurseries that participated in this study."),
                    leafletOutput("mymap", height = 500)
                ))),
       fluidRow(
-        column(width=8, 
+        column(width=6, 
                  infoBox("# Nurseries", nrow(locations), icon=icon("info-circle")),
                  infoBox("# Batches", nrow(treestats), icon=icon("group")),
-                 infoBox("# Species", length(unique(treestats$species)), icon=icon("tree")))
+                 infoBox("# Species", length(unique(treestats$species)), icon=icon("tree")),
+                 infoBox("# Trees", 14175, icon=icon("leaf")))
       )),
     tabItem(tabName="dataplot",
           fluidRow(box(width=6,
