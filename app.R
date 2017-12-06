@@ -9,8 +9,13 @@ server <- function(input, output, session) {
     make_leaflet_map(locations)
   })
   
-  output$dataplot <- renderggiraph({
-    make_ggiraph_plot(si_means, standard_df)
+  output$dataplot <- renderPlot({
+    with(si_means, plot(log10(volume), log10(sizeindex.mean), 
+                        xlab="Container volume (L)",
+                        ylab="Size index (calliper x height)",
+                        axes=FALSE, pch=19, col="cornflowerblue"))
+    magaxis(side=1:2, unlog=1:2)
+    box()
   })
   
   output$downloadPlot <- downloadHandler(
@@ -63,7 +68,7 @@ server <- function(input, output, session) {
 header <- dashboardHeader(
   title = tags$a(href='https://www.westernsydney.edu.au/hie',
                  tags$img(src='WSU_badge_invert_small.png'),
-                  tags$style(HTML('.skin-black .main-header .logo {
+                 tags$style(HTML('.skin-black .main-header .logo {
                               background-color: #9F2137;
                               }
                               .skin-black .main-header .logo:hover {
@@ -101,22 +106,17 @@ body <- dashboardBody(
                  infoBox("# Batches", nrow(treestats), icon=icon("group")),
                  infoBox("# Species", length(unique(treestats$species)), icon=icon("tree")))
       )),
-    tabItem(tabName ="data",
-        box(solidHeader=TRUE, width=12,
-            title="Information on all batches sampled.",
-            DT::dataTableOutput("treestatsdata"))
-    ),
     tabItem(tabName="dataplot",
           fluidRow(box(width=12,
                        p(paste("The plot below shows all sampled batches in the study. The size index",
-                               "is calculated as the calliper (diameter of the seedling) times the height.",
-                               "The colored box is the current standard."))
+                               "is calculated as the calliper (diameter of the seedling) times the height."
+                               ))
                        )),
           fluidRow(
             box(solidHeader=TRUE, width=12, #height=750,
                 title="Size index of all sampled batches.",
-                footer="Hover over each point to see the species, container volume, and nursery.",
-                ggiraphOutput("dataplot")
+                #footer="Hover over each point to see the species, container volume, and nursery.",
+                plotOutput("dataplot")
           ))
     ),
     tabItem(tabName="info",
@@ -156,7 +156,7 @@ sidebar <- dashboardSidebar(
   sidebarMenu(
     menuItem("Info", tabName = "info", icon=icon("home")),
     menuItem("Map", tabName = "map", icon = icon("map-o")),
-    menuItem("Data", icon = icon("database"), tabName = "data"),
+    #menuItem("Data", icon = icon("database"), tabName = "data"),
     menuItem("Results", icon=icon("bar-chart"), tabName="dataplot"),
     menuItem("Test your data", icon=icon("question-circle"), tabName="testdata", badgeLabel = "new", badgeColor = "green")
   )

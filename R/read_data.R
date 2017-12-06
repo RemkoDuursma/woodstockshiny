@@ -8,7 +8,7 @@ locations$popup <- paste(
 
 treestats <- read.csv("data/tree_stats.csv")
 
-si_means <- readRDS("data/simeans.rds")
+si_means <- read.csv("data/size_index_batch_means.csv")
 
 treestats_tab <- dplyr::select(treestats, volume, species, nursery, sizeindex) %>%
   dplyr::mutate(sizeindex = round(sizeindex,1),
