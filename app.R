@@ -94,26 +94,26 @@ body <- dashboardBody(
   tabItems(
     tabItem(tabName = "map",
       fluidRow(
-        column(width = 12,
+        column(width = 6,
                box(width = 200, solidHeader = TRUE,
                    title = "Locations of nurseries included in the study",
                    footer= "Zoom with +/-, move the map by dragging",
                    leafletOutput("mymap", height = 500)
                ))),
       fluidRow(
-        column(width=12, 
+        column(width=8, 
                  infoBox("# Nurseries", nrow(locations), icon=icon("info-circle")),
                  infoBox("# Batches", nrow(treestats), icon=icon("group")),
                  infoBox("# Species", length(unique(treestats$species)), icon=icon("tree")))
       )),
     tabItem(tabName="dataplot",
-          fluidRow(box(width=12,
+          fluidRow(box(width=6,
                        p(paste("The plot below shows all sampled batches in the study. The size index",
                                "is calculated as the calliper (diameter of the seedling) times the height."
                                ))
                        )),
           fluidRow(
-            box(solidHeader=TRUE, width=12, #height=750,
+            box(solidHeader=TRUE, width=6, #height=750,
                 title="Size index of all sampled batches.",
                 #footer="Hover over each point to see the species, container volume, and nursery.",
                 plotOutput("dataplot")
@@ -121,7 +121,7 @@ body <- dashboardBody(
     ),
     tabItem(tabName="info",
             fluidRow(
-              box(width=12,
+              box(width=6,
                 h2("Tree Planting Stock Assessment"),
                 p(paste(readLines("data/infotextblock.txt"), collapse="\n")),
                 p(strong(paste("Navigate on the left for a map of all sampled locations,",
@@ -132,7 +132,7 @@ body <- dashboardBody(
     
     tabItem(tabName="testdata",
             fluidRow(
-              box(width=12,
+              box(width=6,
                   fileInput("uploadedfile", "Choose Excel or CSV File",
                             multiple = FALSE,
                             accept = c("text/csv",
