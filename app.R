@@ -128,6 +128,6 @@ server <- function(input, output, session) {
 
 
 # Run app -------------
-runGadget(shinyApp(ui, server), 
-          viewer = paneViewer())
-
+# runGadget(shinyApp(ui, server), 
+#           viewer = paneViewer())
+shinyApp(ui, server)
