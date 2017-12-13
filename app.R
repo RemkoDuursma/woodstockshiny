@@ -20,22 +20,23 @@ library(miniUI)
 # ui -------------------------
 
 ui <- miniPage(
-  gadgetTitleBar("Treestock AS2303 Root-Shoot Balance"),
+  gadgetTitleBar("Treestock"),
   
   miniTabstripPanel(
     miniTabPanel("Info", icon=icon("home"),
                  miniContentPanel(
                    
-                   #
+                   h4("Welcome to the new AS2303 Standard."),
+                   h4("Manually enter size index data and compare to the national database, or upload a datafile."),
+                   h4("View the map of nurseries included in the national study.")
                  )
     ),
     miniTabPanel("Enter Data", icon=icon("bar-chart"),
                  miniContentPanel(
-                   
                    plotOutput("dataplot")
                  )
     ),
-    miniTabPanel("Upload Data", icon=icon("upload"),
+    miniTabPanel("Upload", icon=icon("upload"),
                  miniContentPanel(
                    
                    fileInput("uploadedfile", "Choose Excel or CSV File",
