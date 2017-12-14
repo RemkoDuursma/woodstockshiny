@@ -19,12 +19,20 @@ ui <- miniPage(
     miniTabPanel("Enter Data", icon=icon("bar-chart"),
                  miniContentPanel(
                    useShinyjs(),
-                   numericInput("volume_entry", label=h3("Container volume (L)"), value=0),
-                   numericInput("calliper_entry", label=h3("Calliper (mm)"), value=0),
-                   numericInput("height_entry", label=h3("Height (cm)"), value=0),
-                   radioButtons("everdeci_entry", label=h3("Type"), 
-                                choices=list("Deciduous" = "deci", "Evergreen" = "ever"),
-                                selected=1),
+                   
+                   dropdownButton(
+                     tags$h3("Input"),
+                     numericInput("volume_entry", label=h3("Container volume (L)"), value=0),
+                     numericInput("calliper_entry", label=h3("Calliper (mm)"), value=0),
+                     numericInput("height_entry", label=h3("Height (cm)"), value=0),
+                     radioGroupButtons("everdeci_entry", label=h3("Type"), 
+                                  choices=list("Deciduous" = "deci", "Evergreen" = "ever"),
+                                  selected=1),
+                     circle = TRUE, status = "danger", icon = icon("gear"), width = "300px",
+                     tooltip = tooltipOptions(title = "Click to enter data")
+                   ),
+                   
+
                    plotOutput("dataplot"),
                    textOutput("sizeindex_message", container=h2)
                    
