@@ -1,26 +1,11 @@
 source("R/load_packages.R")
 source("R/read_data.R")
 
-library(miniUI)
-
-# Preamble ------------
-# header <- dashboardHeader(
-#   title = tags$a(href='https://www.westernsydney.edu.au/hie',
-#                  tags$img(src='WSU_badge_invert_small.png'),
-#                  tags$style(HTML('.skin-black .main-header .logo {
-#                               background-color: #9F2137;
-#                               }
-#                               .skin-black .main-header .logo:hover {
-#                               background-color: #9F2137;
-#                               }'))
-#   )
-# )
-
 
 # ui -------------------------
 
 ui <- miniPage(
-  gadgetTitleBar("Treestock"),
+  gadgetTitleBar("Treestock AS2303", left=NULL, right=NULL),
   
   miniTabstripPanel(
     miniTabPanel("Info", icon=icon("home"),
@@ -33,7 +18,16 @@ ui <- miniPage(
     ),
     miniTabPanel("Enter Data", icon=icon("bar-chart"),
                  miniContentPanel(
-                   plotOutput("dataplot")
+                   useShinyjs(),
+                   numericInput("volume_entry", label=h3("Container volume (L)"), value=0),
+                   numericInput("calliper_entry", label=h3("Calliper (mm)"), value=0),
+                   numericInput("height_entry", label=h3("Height (cm)"), value=0),
+                   radioButtons("everdeci_entry", label=h3("Type"), 
+                                choices=list("Deciduous" = "deci", "Evergreen" = "ever"),
+                                selected=1),
+                   plotOutput("dataplot"),
+                   textOutput("sizeindex_message", container=h2)
+                   
                  )
     ),
     miniTabPanel("Upload", icon=icon("upload"),
@@ -54,7 +48,6 @@ ui <- miniPage(
     ),
     miniTabPanel("Map", icon=icon("map-o"),
                  miniContentPanel(
-                   
                    leafletOutput("mymap")
                  )
     )
@@ -68,17 +61,41 @@ ui <- miniPage(
 
 server <- function(input, output, session) {
   
+  observeEvent(input$volume_entry, {
+    toggle("everdeci_entry", !(input$volume_entry >= 100 | input$volume_entry == 0))
+  })
+  
+  output$sizeindex_message <- renderText({
+    
+    vals <- c(input$volume_entry,input$height_entry,input$calliper_entry)
+    if(any(vals == 0)){
+      return("")
+    } else {
+      si <- input$height_entry * input$calliper_entry
+      msg <- sizeindex_evaluate(input$volume_entry, si, qf_large)
+      return(msg)
+    }
+    
+  })
+  
   output$mymap <- renderLeaflet({
     make_leaflet_map(locations)
   })
   
   output$dataplot <- renderPlot({
-    with(si_means, plot(log10(volume), log10(sizeindex.mean), 
+    with(treestats, plot(log10(volume), log10(si), 
                         xlab="Container volume (L)",
                         ylab="Size index (calliper x height)",
-                        axes=FALSE, pch=19, col="cornflowerblue"))
+                        axes=FALSE, type='n'))
+    for(i in 1:length(qf_large)){
+      abline(qf_large[[i]], lty=5)
+    }
+    
     magaxis(side=1:2, unlog=1:2)
     box()
+    
+    points(log10(as.numeric(input$volume_entry)), log10(as.numeric(input$calliper_entry) * as.numeric(input$height_entry)),
+            pch=15, col="red", cex=2)
   })
   
   output$downloadPlot <- downloadHandler(
@@ -90,15 +107,9 @@ server <- function(input, output, session) {
       dev.off()
     })    
   
-  output$treestatsdata <- DT::renderDataTable({
-    datatable(treestats_tab)
-  })
-  
   info <- eventReactive(input$uploadedfile, {
     
     req(input$uploadedfile)
-    
-    # Changes in read.table 
     
     fext <- file_ext(input$uploadedfile)[1]
     

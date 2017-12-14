@@ -12,6 +12,9 @@ library(tools)
 library(magicaxis)
 library(readxl)
 #library(shinycssloaders)
+library(miniUI)
+library(quantreg)
+library(shinyjs)
 
 # Read functions
 source("R/map_leaflet_code.R")
