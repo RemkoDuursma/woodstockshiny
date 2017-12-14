@@ -11,11 +11,12 @@ locations$popup <- paste(
 )
 
 # Tree-level data.
-treestats <- read.csv("data/tree_stats.csv") %>%
+treestats <- read.csv("data/size_index_raw.csv") %>%
   dplyr::select(volume, sizeindex, leaf_type) %>%
   rename(si = sizeindex) %>%
   filter(volume >= 18)
 
+treestats_small <- filter(treestats, volume < 100)
 treestats_small_ever <- filter(treestats, volume < 100, leaf_type=="evergreen")
 treestats_small_deci <- filter(treestats, volume < 100, leaf_type=="deciduous")
 treestats_large <- filter(treestats, volume >= 100)
@@ -35,9 +36,10 @@ standard_df <- data.frame(x=c(20,2500,2500,20), y=c(24, 1627, 2393, 37), limit=c
 
 
 # Quantile regressions
-taus <- seq(0.2,0.8,by=0.2)
+taus <- seq(0,1,by=0.05)
 qf_small_ever <- lapply(taus, function(x)rq(log10(si) ~ log10(volume), data=treestats_small_ever, tau=x))
 qf_small_deci <- lapply(taus, function(x)rq(log10(si) ~ log10(volume), data=treestats_small_deci, tau=x))
+qf_small <- lapply(taus, function(x)rq(log10(si) ~ log10(volume), data=treestats_small, tau=x))
 qf_large <- lapply(taus, function(x)rq(log10(si) ~ log10(volume), data=treestats_large, tau=x))
 
 

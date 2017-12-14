@@ -20,7 +20,8 @@ sizeindex_evaluate <- function(.X, .Y, rqfit){
   
   p <- 10^sapply(rqfit, function(x)predict(x, newdata=data.frame(volume=.X)))
   
-  int <- findInterval(.Y,p)
+  int <- try(findInterval(.Y,p))
+  if(inherits(int, "try-error"))return("")
   tau_low <- taus[int]
   tau_high <- taus[int+1]
   
