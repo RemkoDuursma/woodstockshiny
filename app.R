@@ -20,19 +20,8 @@ ui <- miniPage(
                  miniContentPanel(
                    useShinyjs(),
                    
-                   dropdownButton(
-                     tags$h3("Input"),
-                     numericInput("volume_entry", label=h3("Container volume (L)"), value=0),
-                     numericInput("calliper_entry", label=h3("Calliper (mm)"), value=0),
-                     numericInput("height_entry", label=h3("Height (cm)"), value=0),
-                     radioGroupButtons("everdeci_entry", label=h3("Type"), 
-                                  choices=list("Deciduous" = "deci", "Evergreen" = "ever"),
-                                  selected=1),
-                     circle = TRUE, status = "danger", icon = icon("gear"), width = "300px",
-                     tooltip = tooltipOptions(title = "Click to enter data")
-                   ),
+                   uiOutput("dropdown_entry"),
                    
-
                    plotOutput("dataplot"),
                    textOutput("sizeindex_message", container=h2)
                    
@@ -70,10 +59,31 @@ ui <- miniPage(
 server <- function(input, output, session) {
   
   observeEvent(input$volume_entry, {
-    toggle("everdeci_entry", !(input$volume_entry >= 100 | input$volume_entry == 0))
+    toggle("everdeci_entry", (input$volume_entry >= 100 | input$volume_entry == 0))
   })
   
+  observeEvent(
+    input$button, {
+      #shinyjs::hide("button")
+    }
+  )
+  
+  output$dropdown_entry <- renderUI(dropdownButton(
+    tags$h3("Input"),
+    numericInput("volume_entry", label=h3("Container volume (L)"), value=0),
+    numericInput("calliper_entry", label=h3("Calliper (mm)"), value=0),
+    numericInput("height_entry", label=h3("Height (cm)"), value=0),
+    radioGroupButtons("everdeci_entry", label=h3("Type"), 
+                      choices=list("Deciduous" = "deci", "Evergreen" = "ever"),
+                      selected=1),
+    #actionButton("button", "Close"),
+    circle = TRUE, status = "danger", icon = icon("gear"), width = "300px",
+    tooltip = tooltipOptions(title = "Click to enter data")
+  ))
+  
   output$sizeindex_message <- renderText({
+    
+    req(input$volume_entry)
     
     vals <- c(input$volume_entry,input$height_entry,input$calliper_entry)
     if(any(vals == 0)){
@@ -91,6 +101,7 @@ server <- function(input, output, session) {
   })
   
   output$dataplot <- renderPlot({
+    par(cex.lab=1.3)
     with(treestats, plot(log10(volume), log10(si), 
                         xlab="Container volume (L)",
                         ylab="Size index (calliper x height)",
