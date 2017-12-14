@@ -13,7 +13,8 @@ ui <- miniPage(
                    
                    h4("Welcome to the new AS2303 Standard."),
                    h4("Manually enter size index data and compare to the national database, or upload a datafile."),
-                   h4("View the map of nurseries included in the national study.")
+                   h4("View the map of nurseries included in the national study."),
+                   img(src="tree.jpg", align="center")
                  )
     ),
     miniTabPanel("Enter Data", icon=icon("bar-chart"),
