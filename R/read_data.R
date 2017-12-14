@@ -36,7 +36,7 @@ standard_df <- data.frame(x=c(20,2500,2500,20), y=c(24, 1627, 2393, 37), limit=c
 
 
 # Quantile regressions
-taus <- seq(0,1,by=0.05)
+taus <- seq(0.05,0.95,by=0.05)
 qf_small_ever <- lapply(taus, function(x)rq(log10(si) ~ log10(volume), data=treestats_small_ever, tau=x))
 qf_small_deci <- lapply(taus, function(x)rq(log10(si) ~ log10(volume), data=treestats_small_deci, tau=x))
 qf_small <- lapply(taus, function(x)rq(log10(si) ~ log10(volume), data=treestats_small, tau=x))
