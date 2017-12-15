@@ -126,3 +126,30 @@ plot_si_grid <- function(size=c("small", "large"), type=c("all","deci","ever")){
   
 }
 
+plot_si_grid_interf <- function(volume, everdeci){
+  
+  if(is.na(volume)){
+    plot(-9999, type='n', ann=F, axes=F)
+  } else {
+    
+    if(volume >= 100){
+      plot_si_grid("large")
+      legend("top", "All species, > 100L", bty='n', text.font=3)
+    } else {
+      if(isTruthy(everdeci)){
+        if(everdeci == "ever"){
+          plot_si_grid("small","ever")
+          legend("top", "Evergreen species, < 100L", bty='n', text.font=3)
+        }
+        if(everdeci == "deci"){
+          plot_si_grid("small","deci")
+          legend("top", "Deciduous species, < 100L", bty='n', text.font=3)
+        }
+      } else {
+        plot_si_grid("small","all")
+        legend("top", "All species, < 100L", bty='n', text.font=3)
+      }
+    }
+    
+  }
+}

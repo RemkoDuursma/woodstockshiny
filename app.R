@@ -54,7 +54,6 @@ ui <- miniPage(
                    selectInput("height_column", "Column with height (m):", choices = NULL),
                    plotOutput("table_display"),
                    downloadButton('downloadPlot', 'Download Plot')
-                   
                  )
     ),
     miniTabPanel("Map", icon=icon("map-o"),
@@ -122,36 +121,13 @@ server <- function(input, output, session) {
   })
   
   output$dataplot <- renderPlot({
-    
 
-    if(is.na(input$volume_entry)){
-      plot(1, type='n', ann=F, axes=F)
-    } else {
-      
-      if(input$volume_entry >= 100){
-        plot_si_grid("large")
-        legend("top", "All species, > 100L", bty='n', text.font=3)
-      } else {
-        if(isTruthy(input$everdeci_entry)){
-          if(input$everdeci_entry == "ever"){
-            plot_si_grid("small","ever")
-            legend("top", "Evergreen species, < 100L", bty='n', text.font=3)
-          }
-          if(input$everdeci_entry == "deci"){
-            plot_si_grid("small","deci")
-            legend("top", "Deciduous species, < 100L", bty='n', text.font=3)
-          }
-        } else {
-          plot_si_grid("small","all")
-          legend("top", "All species, < 100L", bty='n', text.font=3)
-        }
-      }
-      points(log10(as.numeric(input$volume_entry)), 
-             log10(as.numeric(input$calliper_entry) * as.numeric(input$height_entry)),
-             pch=15, col="red", cex=2)
-    }
+    plot_si_grid_interf(input$volume_entry, input$everdeci_entry)
     
-
+    points(log10(as.numeric(input$volume_entry)), 
+           log10(as.numeric(input$calliper_entry) * as.numeric(input$height_entry)),
+           pch=15, col="red", cex=2)
+    
   })
   
   output$downloadPlot <- downloadHandler(
@@ -188,7 +164,19 @@ server <- function(input, output, session) {
   
   output$table_display <- renderPlot({
     f <- info()
-    comparison_standard_plot(input, f, standard_df)
+    
+    if(input$container_column != '')vol <- as.numeric(f[, input$container_column])
+    if(input$calliper_column != '')diam <- as.numeric(f[, input$calliper_column])
+    if(input$height_column != '')height <- as.numeric(f[, input$height_column])
+    
+    if(input$container_column != ''){
+      plot_si_grid_interf(max(vol), "all")
+    }
+    
+    if(!('' %in% c(input$container_column,input$calliper_column,input$height_column))){
+      points(log10(vol), log10(diam*height), pch=19, col="red")
+    }
+    
   })
   
 }
