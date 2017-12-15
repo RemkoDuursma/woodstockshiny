@@ -15,6 +15,7 @@ plot_si_ranges <- function(fits, whichfits=1:length(fits), xlim, ylim,
   yat <- as.vector(sapply(0:3, function(i)seq(10^i, 10^(i + 1) - 10^i, by=10^i)))
   
   par(yaxs="i", xaxs="i", las=1, tcl=0, cex.lab=1.2, 
+      mar=c(3.5,3.5,0.5,0.5),
       mgp=c(2.4, 0.25, 0), 
       cex.axis=0.7, pty='s')
       #family="Gotham Narrow Book")

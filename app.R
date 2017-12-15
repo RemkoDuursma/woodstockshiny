@@ -1,7 +1,7 @@
 source("R/load_packages.R")
 source("R/read_data.R")
 
-library(shinycssloaders)
+
 
 # ui -------------------------
 
@@ -37,7 +37,7 @@ ui <- miniPage(
                    
                    
                    textOutput("sizeindex_message", container=h2),
-                   plotOutput("dataplot", width="80%")
+                   plotOutput("dataplot", width="100%")
                    
                    
                  )
