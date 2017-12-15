@@ -22,20 +22,20 @@ sizeindex_evaluate <- function(.X, .Y, rqfit){
   
   int <- try(findInterval(.Y,p))
   if(inherits(int, "try-error"))return("")
-  tau_low <- taus[int]
-  tau_high <- taus[int+1]
+  tau_low <- taus_all[int]
+  tau_high <- taus_all[int+1]
   
   if(any(is.na(c(.X, .Y))))return("")
   
   if(int == 0){
     
-    msg <- sprintf("Your trees are small compared to the database (%s%% were larger).",
-                   (1 - taus[1])*100)
+    msg <- sprintf("Your trees are small compared to the database (>%s%% were larger).",
+                   (1 - taus_all[1])*100)
     
   } else if (int == length(p)){
     
-    msg <- sprintf("Your trees are large compared to the database (%s%% were smaller).",
-                   taus[length(taus)]*100)
+    msg <- sprintf("Your trees are large compared to the database (>%s%% were smaller).",
+                   taus[length(taus_all)]*100)
     
   } else if(tau_low < 0.5){
     
@@ -53,18 +53,5 @@ sizeindex_evaluate <- function(.X, .Y, rqfit){
 
 
 
-
-#--- For quantile regressions
-poly_rqs <- function(mod1, mod2, ...){
-  
-  pu <- par("usr")
-  x <- pu[1:2]
-  
-  newdat <- data.frame(volume=10^x)
-  y1 <- predict(mod1, newdata=newdat)
-  y2 <- predict(mod2, newdata=newdat)
-  
-  polygon(x=c(x, rev(x)), y=c(y1, rev(y2)), border=NA, ...)
-}
 
 

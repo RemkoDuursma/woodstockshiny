@@ -14,7 +14,7 @@ ui <- miniPage(
                    h4("Welcome to the new AS2303 Standard."),
                    h4("Manually enter size index data and compare to the national database, or upload a datafile."),
                    h4("View the map of nurseries included in the national study."),
-                   img(src="tree.jpg", align="center")
+                   img(src="tree.png", align="center")
                  )
     ),
     miniTabPanel("Enter Data", icon=icon("bar-chart"),
@@ -23,11 +23,11 @@ ui <- miniPage(
                    useShinyjs(),
                    # 
                    # dropdownButton(
-                     tags$h3("Input"),
-                     numericInput("volume_entry", label=h3("Container volume (L)"), value=0),
-                     numericInput("calliper_entry", label=h3("Calliper (mm)"), value=0),
-                     numericInput("height_entry", label=h3("Height (m)"), value=0),
-                     radioGroupButtons("everdeci_entry", label=h3("Type"), 
+                     
+                     numericInput("volume_entry", label=h4("Container volume (L)"), value=NA),
+                     numericInput("calliper_entry", label=h4("Calliper (mm)"), value=NA),
+                     numericInput("height_entry", label=h4("Height (m)"), value=NA),
+                     radioGroupButtons("everdeci_entry", label=h4("Type"), 
                                        choices=list("Deciduous" = "deci", "Evergreen" = "ever"),
                                        selected=1),
                      # #actionButton("button", "Close"),
@@ -35,8 +35,9 @@ ui <- miniPage(
                      # tooltip = tooltipOptions(title = "Click to enter data")
                    
                    
-                   plotOutput("dataplot", width="80%"),
-                   textOutput("sizeindex_message", container=h2)
+                   textOutput("sizeindex_message", container=h2),
+                   plotOutput("dataplot", width="80%")
+                   
                    
                  )
     ),
@@ -73,7 +74,7 @@ ui <- miniPage(
 server <- function(input, output, session) {
   
   observeEvent(input$volume_entry, {
-    if (input$volume_entry >= 100 | input$volume_entry == 0){
+    if (input$volume_entry >= 100 | is.na(input$volume_entry) | input$volume_entry == 0){
       shinyjs::hide("everdeci_entry")
     } else {
       shinyjs::show("everdeci_entry")
@@ -87,24 +88,26 @@ server <- function(input, output, session) {
     
     vals <- c(input$volume_entry,input$height_entry,input$calliper_entry)
     vals_num <- as.numeric(vals)
+    
     if(any(is.na(vals_num))){
       return("")
     }
+    
     if(any(vals == 0)){
       return("")
     } else {
       si <- input$height_entry * input$calliper_entry
-      if(input$volume_entry > 100){
-        fits <- qf_large
+      if(isTruthy(input$volume_entry) && input$volume_entry > 100){
+        fits <- qf_large_all
       } else {
         if(isTruthy(input$everdeci_entry)){
           if(input$everdeci_entry == "ever"){
-            fits <- qf_small_ever
+            fits <- qf_small_ever_all
           } else if(input$everdeci_entry == "deci"){
-            fits <- qf_small_deci
+            fits <- qf_small_deci_all
           }
         } else {
-          fits <- qf_small
+          fits <- qf_small_all
         }
         
       }
@@ -120,69 +123,32 @@ server <- function(input, output, session) {
   
   output$dataplot <- renderPlot({
     
-    
-    
-    par(cex.lab=1.3)
-    if(!isTruthy(input$volume_entry) || input$volume_entry == 0){
+
+    if(is.na(input$volume_entry)){
       plot(1, type='n', ann=F, axes=F)
     } else {
       
       if(input$volume_entry >= 100){
-        with(treestats_large, plot(log10(volume), log10(si), 
-                          xlab="Container volume (L)",
-                          ylab="Size index (calliper x height)",
-                          axes=FALSE, type='n'))
-        for(i in 1:length(qf_large)){
-          abline(qf_large[[i]], lty=5)
-        }
+        plot_si_grid("large")
         legend("top", "All species, > 100L", bty='n', text.font=3)
       } else {
         if(isTruthy(input$everdeci_entry)){
           if(input$everdeci_entry == "ever"){
-            with(treestats_small_ever, plot(log10(volume), log10(si), 
-                                       xlab="Container volume (L)",
-                                       ylab="Size index (calliper x height)",
-                                       axes=FALSE, type='n'))
-            for(i in 1:length(qf_small_ever)){
-              abline(qf_small_ever[[i]], lty=5)
-            }
+            plot_si_grid("small","ever")
             legend("top", "Evergreen species, < 100L", bty='n', text.font=3)
           }
           if(input$everdeci_entry == "deci"){
-            with(treestats_small_deci, plot(log10(volume), log10(si), 
-                                            xlab="Container volume (L)",
-                                            ylab="Size index (calliper x height)",
-                                            axes=FALSE, type='n'))
-            for(i in 1:length(qf_small_deci)){
-              abline(qf_small_deci[[i]], lty=5)
-            }
+            plot_si_grid("small","deci")
             legend("top", "Deciduous species, < 100L", bty='n', text.font=3)
           }
-          magaxis(side=1:2, unlog=1:2)
-          box()
-          
-          points(log10(as.numeric(input$volume_entry)), 
-                 log10(as.numeric(input$calliper_entry) * as.numeric(input$height_entry)),
-                 pch=15, col="red", cex=2)
         } else {
-          with(treestats_small, plot(log10(volume), log10(si), 
-                                          xlab="Container volume (L)",
-                                          ylab="Size index (calliper x height)",
-                                          axes=FALSE, type='n'))
-          for(i in 1:length(qf_small)){
-            abline(qf_small[[i]], lty=5)
-          }
+          plot_si_grid("small","all")
           legend("top", "All species, < 100L", bty='n', text.font=3)
-          magaxis(side=1:2, unlog=1:2)
-          box()
-          
-          
-          
-          points(log10(as.numeric(input$volume_entry)), 
-                 log10(as.numeric(input$calliper_entry) * as.numeric(input$height_entry)),
-                 pch=15, col="red", cex=2)
         }
       }
+      points(log10(as.numeric(input$volume_entry)), 
+             log10(as.numeric(input$calliper_entry) * as.numeric(input$height_entry)),
+             pch=15, col="red", cex=2)
     }
     
 
