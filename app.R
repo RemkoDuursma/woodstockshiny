@@ -1,6 +1,7 @@
 source("R/load_packages.R")
 source("R/read_data.R")
 
+library(shinycssloaders)
 
 # ui -------------------------
 
@@ -59,7 +60,7 @@ ui <- miniPage(
     miniTabPanel("Map", icon=icon("map-o"),
                  miniContentPanel(
                    h4("Locations of participating nurseries."),
-                   leafletOutput("mymap")
+                   withSpinner(leafletOutput("mymap"))
                  )
     )
   )
