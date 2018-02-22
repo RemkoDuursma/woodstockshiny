@@ -7,6 +7,7 @@ source("R/read_data.R")
 
 ui <- miniPage(
   gadgetTitleBar("Treestock AS2303", left=NULL, right=NULL),
+  useShinyalert(),
   
   miniTabstripPanel(
     miniTabPanel("Info", icon=icon("home"),
@@ -20,31 +21,25 @@ ui <- miniPage(
     ),
     miniTabPanel("Enter Data", icon=icon("bar-chart"),
                  miniContentPanel(
-                   h4("For Mobile use. Enter container volume, calliper and height and compare to the new standard."),
+                   h3("Enter container volume, calliper and height and compare to the new standard"),
+                   h4("For container volume < 100L, select Deciduous or Evergreen"),
                    useShinyjs(),
-                   # 
-                   # dropdownButton(
-                     
-                     numericInput("volume_entry", label=h4("Container volume (L)"), value=NA),
-                     numericInput("calliper_entry", label=h4("Calliper (mm)"), value=NA),
-                     numericInput("height_entry", label=h4("Height (m)"), value=NA),
-                     radioGroupButtons("everdeci_entry", label=h4("Type"), 
-                                       choices=list("Deciduous" = "deci", "Evergreen" = "ever"),
-                                       selected=1),
-                     # #actionButton("button", "Close"),
-                     # circle = TRUE, status = "danger", icon = icon("gear"), width = "300px",
-                     # tooltip = tooltipOptions(title = "Click to enter data")
                    
+                   numericInput("volume_entry", label=h4("Container volume (L) (18 - 3000L)"), value=NA),
+                   numericInput("calliper_entry", label=h4("Calliper (mm)"), value=NA),
+                   numericInput("height_entry", label=h4("Height (m)"), value=NA),
+                   radioGroupButtons("everdeci_entry", label=h4("Type"), 
+                                     choices=list("Deciduous" = "deci", "Evergreen" = "ever"),
+                                     selected=1),
                    
                    textOutput("sizeindex_message", container=h2),
                    plotOutput("dataplot", width="100%")
-                   
                    
                  )
     ),
     miniTabPanel("Upload", icon=icon("upload"),
                  miniContentPanel(
-                   h4("For Desktop use. Upload a data file and compare to the new standard."),
+                   h3("For Desktop use. Upload a data file and compare to the new standard."),
                    fileInput("uploadedfile", "Choose Excel or CSV File",
                              multiple = FALSE,
                              accept = c("text/csv",
@@ -59,7 +54,7 @@ ui <- miniPage(
     ),
     miniTabPanel("Map", icon=icon("map-o"),
                  miniContentPanel(
-                   h4("Locations of participating nurseries."),
+                   h3("Locations of participating nurseries."),
                    withSpinner(leafletOutput("mymap"))
                  )
     )
@@ -81,12 +76,17 @@ server <- function(input, output, session) {
     }
     
   })
+  observeEvent(input$volume_entry, {
+    if(!is.na(input$volume_entry) && input$volume_entry > 3000){
+      shinyalert("Error", "Please enter a container volume less than 3000L", type = "error")
+    }
+  })
   
   output$sizeindex_message <- renderText({
     
     req(input$volume_entry)
     
-    vals <- c(input$volume_entry,input$height_entry,input$calliper_entry)
+    vals <- c(input$volume_entry, input$height_entry, input$calliper_entry)
     vals_num <- as.numeric(vals)
     
     if(any(is.na(vals_num))){
@@ -99,6 +99,11 @@ server <- function(input, output, session) {
       si <- input$height_entry * input$calliper_entry
       if(isTruthy(input$volume_entry) && input$volume_entry > 100){
         fits <- qf_large_all
+        
+        # check if data point in range of figure
+        in_range <- findInterval(input$volume_entry, x_range_large) == 1 &
+          findInterval(si, y_range_large) == 1
+        
       } else {
         if(isTruthy(input$everdeci_entry)){
           if(input$everdeci_entry == "ever"){
@@ -110,8 +115,16 @@ server <- function(input, output, session) {
           fits <- qf_small_all
         }
         
+        in_range <- findInterval(input$volume_entry, x_range_small) == 1 &
+          findInterval(si, y_range_small) == 1
+        
       }
       msg <- sizeindex_evaluate(input$volume_entry, si, fits)
+      
+      if(!in_range){
+        msg <- paste0(msg, "\nData point is outside figure range.")
+      }
+      
       return(msg)
     }
     
@@ -136,7 +149,9 @@ server <- function(input, output, session) {
     content = function(file) {
       png(file)
       f <- info()
-      comparison_standard_plot(input, f, standard_df)
+      
+      plot_uploaded_data(input, f)
+      
       dev.off()
     })    
   
@@ -166,18 +181,8 @@ server <- function(input, output, session) {
   output$table_display <- renderPlot({
     f <- info()
     
-    if(input$container_column != '')vol <- as.numeric(f[, input$container_column])
-    if(input$calliper_column != '')diam <- as.numeric(f[, input$calliper_column])
-    if(input$height_column != '')height <- as.numeric(f[, input$height_column])
-    
-    if(input$container_column != ''){
-      plot_si_grid_interf(max(vol), "all")
-    }
-    
-    if(!('' %in% c(input$container_column,input$calliper_column,input$height_column))){
-      points(log10(vol), log10(diam*height), pch=19, col="red")
-    }
-    
+    plot_uploaded_data(input, f)
+  
   })
   
 }

@@ -18,9 +18,13 @@ sizeindex_evaluate <- function(.X, .Y, rqfit){
   # .X <- 0.5
   # .Y <- -0.4
   
+  # Size index at each of the quantiles used in the rqfit object (itself a list of rq objects)
   p <- 10^sapply(rqfit, function(x)predict(x, newdata=data.frame(volume=.X)))
   
+  # Which quantiles does our observation fall between?
   int <- try(findInterval(.Y,p))
+  
+  # Actual quantiles
   if(inherits(int, "try-error"))return("")
   tau_low <- taus_all[int]
   tau_high <- taus_all[int+1]
@@ -35,7 +39,7 @@ sizeindex_evaluate <- function(.X, .Y, rqfit){
   } else if (int == length(p)){
     
     msg <- sprintf("Your trees are large compared to the database (>%s%% were smaller).",
-                   taus[length(taus_all)]*100)
+                   taus_all[length(taus_all)]*100)
     
   } else if(tau_low < 0.5){
     

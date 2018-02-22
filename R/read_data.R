@@ -51,4 +51,12 @@ qf_small_plot <- lapply(taus_plot, function(x)rq(log10(si) ~ log10(volume), data
 qf_large_plot <- lapply(taus_plot, function(x)rq(log10(si) ~ log10(volume), data=treestats_large, tau=x))
 
 
+# For plotting, and checking ranges
+x_range_large <- c(100,3000)
+y_range_large <- c(50,3000)
+x_range_small <- c(18,100)
+y_range_small <- c(8,200)
+
+
+
 

@@ -90,14 +90,14 @@ poly_rqs <- function(mod1, mod2, ...){
   polygon(x=c(x, rev(x)), y=c(y1, rev(y2)), border=NA, ...)
 }
 
-
+# axis limits are set by constants ('x_range_large' etc.), defined in read_data.R
 plot_si_grid <- function(size=c("small", "large"), type=c("all","deci","ever")){
   
   size <- match.arg(size)
   if(size == "large"){
     plot_si_ranges(qf_large_plot, 
                    quantiles=taus_plot,
-                   xlim=log10(c(100,3000)), ylim=log10(c(50,3000)),
+                   xlim=log10(x_range_large), ylim=log10(y_range_large),
                    labsrt=34)
   } else {
     
@@ -107,19 +107,19 @@ plot_si_grid <- function(size=c("small", "large"), type=c("all","deci","ever")){
       plot_si_ranges(qf_small_ever_plot, 
                      quantiles=taus_plot,
                      labsrt=22,
-                     xlim=log10(c(18,100)), ylim=log10(c(8,200)))
+                     xlim=log10(x_range_small), ylim=log10(y_range_small))
     }
     if(type == "deci"){
       plot_si_ranges(qf_small_deci_plot, 
                      quantiles=taus_plot,
                      labsrt=22,
-                     xlim=log10(c(18,100)), ylim=log10(c(8,200)))
+                     xlim=log10(x_range_small), ylim=log10(y_range_small))
     }
     if(type == "all"){
       plot_si_ranges(qf_small_plot, 
                      quantiles=taus_plot,
                      labsrt=22,
-                     xlim=log10(c(18,100)), ylim=log10(c(8,200)))
+                     xlim=log10(x_range_small), ylim=log10(y_range_small))
     }
     
   }
@@ -154,3 +154,23 @@ plot_si_grid_interf <- function(volume, everdeci){
     
   }
 }
+
+
+plot_uploaded_data <- function(input, f){
+  
+  if(input$container_column != '')vol <- as.numeric(f[, input$container_column])
+  if(input$calliper_column != '')diam <- as.numeric(f[, input$calliper_column])
+  if(input$height_column != '')height <- as.numeric(f[, input$height_column])
+  
+  if(input$container_column != ''){
+    plot_si_grid_interf(max(vol), "all")
+  }
+  
+  if(!('' %in% c(input$container_column,input$calliper_column,input$height_column))){
+    points(log10(vol), log10(diam*height), pch=19, col="red")
+  }
+  
+}
+
+
+

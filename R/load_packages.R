@@ -17,6 +17,7 @@ library(quantreg)
 library(shinyjs)
 library(shinyWidgets)
 library(shinycssloaders)
+library(shinyalert)
 
 # Read functions
 source("R/map_leaflet_code.R")
