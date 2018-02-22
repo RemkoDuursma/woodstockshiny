@@ -13,8 +13,10 @@ ui <- miniPage(
     miniTabPanel("Info", icon=icon("home"),
                  miniContentPanel(
                    
-                   h4("Welcome to the AS2303 Standard app."),
-                   h4("Manually enter size index data and compare to the national database, or upload a datafile."),
+                   h4(strong("Welcome to the AS2303 Standard app.")),
+                   h4("Compare size index of your trees to the national database."),
+                   h4(a("Visit this page to read about this project.", 
+                        href="https://www.westernsydney.edu.au/hie/research/research_projects/tree_stock_standard")),
                    img(src="tree.png", align="left")
                  )
     ),
@@ -51,11 +53,17 @@ ui <- miniPage(
                    downloadButton('downloadPlot', 'Download Plot')
                  )
     ),
-    miniTabPanel("Map", icon=icon("map-o"),
+    miniTabPanel("Database", icon=icon("map-o"),
                  miniContentPanel(
-                   h3("Locations of participating nurseries where data was collected for this study."),
-                   h4("Click on clusters to expand."),
-                   withSpinner(leafletOutput("mymap"))
+                   h3("Locations of participating nurseries."),
+                   p("This app is based on data collected at", 
+                     strong("23"), "nurseries",
+                     strong("632"), "batches",
+                     "and", strong("13796"), "trees"),
+                   p("To download the raw data", 
+                     a("visit this page", href="https://github.com/courtneycampany/HIA_size_index")),
+                   withSpinner(leafletOutput("mymap")),
+                   h4("Click on clusters to expand.")
                  )
     )
   )
