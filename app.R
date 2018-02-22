@@ -13,10 +13,9 @@ ui <- miniPage(
     miniTabPanel("Info", icon=icon("home"),
                  miniContentPanel(
                    
-                   h4("Welcome to the new AS2303 Standard."),
+                   h4("Welcome to the AS2303 Standard app."),
                    h4("Manually enter size index data and compare to the national database, or upload a datafile."),
-                   h4("View the map of nurseries included in the national study."),
-                   img(src="tree.png", align="center")
+                   img(src="tree.png", align="left")
                  )
     ),
     miniTabPanel("Enter Data", icon=icon("bar-chart"),
@@ -54,7 +53,8 @@ ui <- miniPage(
     ),
     miniTabPanel("Map", icon=icon("map-o"),
                  miniContentPanel(
-                   h3("Locations of participating nurseries."),
+                   h3("Locations of participating nurseries where data was collected for this study."),
+                   h4("Click on clusters to expand."),
                    withSpinner(leafletOutput("mymap"))
                  )
     )
