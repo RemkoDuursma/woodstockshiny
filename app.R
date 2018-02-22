@@ -13,9 +13,9 @@ ui <- miniPage(
     miniTabPanel("Info", icon=icon("home"),
                  miniContentPanel(
                    
-                   h4(strong("Welcome to the AS2303 Standard app.")),
-                   h4("Compare size index of your trees to the national database."),
-                   h4(a("Visit this page to read about this project.", 
+                   h4(strong("Welcome to the app for the AS2303 Standard")),
+                   h4("Compare size index of your trees to the national database"),
+                   h4(a("Visit this page to read about this project", 
                         href="https://www.westernsydney.edu.au/hie/research/research_projects/tree_stock_standard")),
                    img(src="tree.png", align="left")
                  )
@@ -40,7 +40,8 @@ ui <- miniPage(
     ),
     miniTabPanel("Upload", icon=icon("upload"),
                  miniContentPanel(
-                   h3("For Desktop use. Upload a data file and compare to the new standard."),
+                   h3("Upload a data file and compare to the new standard"),
+                   p("Recommended for desktop use only"),
                    fileInput("uploadedfile", "Choose Excel or CSV File",
                              multiple = FALSE,
                              accept = c("text/csv",
@@ -62,8 +63,7 @@ ui <- miniPage(
                      "and", strong("13796"), "trees"),
                    p("To download the raw data", 
                      a("visit this page", href="https://github.com/courtneycampany/HIA_size_index")),
-                   withSpinner(leafletOutput("mymap")),
-                   h4("Click on clusters to expand.")
+                   withSpinner(leafletOutput("mymap"))
                  )
     )
   )
