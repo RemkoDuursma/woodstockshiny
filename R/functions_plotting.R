@@ -146,10 +146,11 @@ plot_si_grid_interf <- function(volume, everdeci){
           plot_si_grid("small","deci")
           legend("top", "Deciduous species, < 100L", bty='n', text.font=3)
         }
-      } else {
-        plot_si_grid("small","all")
-        legend("top", "All species, < 100L", bty='n', text.font=3)
-      }
+      } 
+      # else {
+      #   plot_si_grid("small","all")
+      #   legend("top", "All species, < 100L", bty='n', text.font=3)
+      # }
     }
     
   }

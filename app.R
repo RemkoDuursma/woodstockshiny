@@ -107,6 +107,7 @@ server <- function(input, output, session) {
   output$sizeindex_message <- renderText({
     
     req(input$volume_entry)
+    if(input$volume_entry <= 100)req(input$everdeci_entry)
     
     vals <- c(input$volume_entry, input$height_entry, input$calliper_entry)
     vals_num <- as.numeric(vals)
@@ -152,18 +153,20 @@ server <- function(input, output, session) {
     
   })
   
-  output$mymap <- renderLeaflet({
-    make_leaflet_map(locations)
-  })
-  
   output$dataplot <- renderPlot({
 
+    req(input$volume_entry,  input$calliper_entry, input$height_entry)
+    
     plot_si_grid_interf(input$volume_entry, input$everdeci_entry)
     
     points(log10(as.numeric(input$volume_entry)), 
            log10(as.numeric(input$calliper_entry) * as.numeric(input$height_entry)),
            pch=15, col="red", cex=2)
     
+  })
+  
+  output$mymap <- renderLeaflet({
+    make_leaflet_map(locations)
   })
   
   output$downloadPlot <- downloadHandler(
