@@ -22,4 +22,3 @@ library(shinyalert)
 # Read functions
 source("R/map_leaflet_code.R")
 source("R/ggiraph_plot.R")
-source("R/comparison_standard_plot.R")

@@ -6,7 +6,7 @@ source("R/read_data.R")
 # ui -------------------------
 
 ui <- miniPage(theme="miniUI.css",
-  gadgetTitleBar("Treestock AS2303", left=NULL, right=NULL),
+  gadgetTitleBar("Treestocker", left=NULL, right=NULL),
   useShinyalert(),
   
   #' tags$style(HTML("
