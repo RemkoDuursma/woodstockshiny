@@ -5,14 +5,29 @@ source("R/read_data.R")
 
 # ui -------------------------
 
-ui <- miniPage(
+ui <- miniPage(theme="miniUI.css",
   gadgetTitleBar("Treestock AS2303", left=NULL, right=NULL),
   useShinyalert(),
+  
+  #' tags$style(HTML("
+  #'   @import url('//fonts.googleapis.com/css?family=Amatic+SC|Josefin+Slab');
+  #'   h2, h3, button {
+  #'     font-family: 'Amatic SC', cursive;
+  #'   }
+  #'   h2 {
+  #'     font-size: 50px;
+  #'   }
+  #'   p {
+  #'     font-family: 'Josefin Slab', cursive;
+  #'     font-size: 18px;
+  #'   }
+  #'   button {
+  #'     font-size: 28px;
+  #'   }")),
   
   miniTabstripPanel(
     miniTabPanel("Info", icon=icon("home"),
                  miniContentPanel(
-                   
                    h4(strong("Welcome to the app for the AS2303 Standard")),
                    h4("Compare size index of your trees to the national database"),
                    h4(a("Visit this page to read about this project", 
@@ -35,7 +50,6 @@ ui <- miniPage(
                    
                    textOutput("sizeindex_message", container=h2),
                    plotOutput("dataplot", width="100%")
-                   
                  )
     ),
     miniTabPanel("Upload", icon=icon("upload"),
