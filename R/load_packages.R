@@ -19,7 +19,7 @@ library(readxl)
 library(miniUI)
 library(quantreg)
 
-library(plotly)
+#library(plotly)
 
 # Read functions
 source("R/map_leaflet_code.R")
