@@ -26,30 +26,28 @@ sizeindex_evaluate <- function(.X, .Y, rqfit){
   
   # Actual quantiles
   if(inherits(int, "try-error"))return("")
-  tau_low <- taus_all[int]
-  tau_high <- taus_all[int+1]
+  tau_low <- taus_plot[int]
+  tau_high <- taus_plot[int+1]
   
   if(any(is.na(c(.X, .Y))))return("")
   
   if(int == 0){
     
-    msg <- sprintf("Your trees are small compared to the database (>%s%% were larger).",
-                   (1 - taus_all[1])*100)
+    msg <- "Your trees are smaller than 5% of trees in the database."
     
-  } else if (int == length(p)){
+  } else if (int == 4){
     
-    msg <- sprintf("Your trees are large compared to the database (>%s%% were smaller).",
-                   taus_all[length(taus_all)]*100)
+    msg <- "Your trees are larger than 95% of trees in the database."
     
-  } else if(tau_low < 0.5){
+  } else if(int == 1){
     
-    msg <- sprintf("Your trees are smaller than %s%% of trees in the database.", 
-                   (1 - tau_high)*100)
+    msg <- "Your trees are in the lower range."
     
-  } else {
+  } else if(int == 2){
     
-    msg <- sprintf("Your trees are larger than %s%% of batches in the database.", 
-                   tau_low*100)
+    msg <- "Your trees are in the preferred range."
+  } else if(int == 3) {
+    msg <- "Your trees are in the upper range."
   }
   
   return(msg)

@@ -17,11 +17,6 @@ treestats <- read.csv("data/size_index_raw.csv") %>%
   rename(si = sizeindex) %>%
   filter(volume >= 18)
 
-treestats_small <- filter(treestats, volume < 100)
-treestats_small_ever <- filter(treestats, volume < 100, leaf_type=="evergreen")
-treestats_small_deci <- filter(treestats, volume < 100, leaf_type=="deciduous")
-treestats_large <- filter(treestats, volume >= 100)
-
 # Batch-level data/
 si_means <- read.csv("data/size_index_batch_means.csv")
 
@@ -37,18 +32,8 @@ standard_df <- data.frame(x=c(20,2500,2500,20), y=c(24, 1627, 2393, 37), limit=c
 
 
 # Quantile regressions
-taus_all <- seq(0.05,0.95,by=0.05)
-qf_small_ever_all <- lapply(taus_all, function(x)rq(log10(si) ~ log10(volume), data=treestats_small_ever, tau=x))
-qf_small_deci_all <- lapply(taus_all, function(x)rq(log10(si) ~ log10(volume), data=treestats_small_deci, tau=x))
-qf_small_all <- lapply(taus_all, function(x)rq(log10(si) ~ log10(volume), data=treestats_small, tau=x))
-qf_large_all <- lapply(taus_all, function(x)rq(log10(si) ~ log10(volume), data=treestats_large, tau=x))
-
-
-taus_plot <- c(0.1, 0.25, 0.75, 0.9)
-qf_small_ever_plot <- lapply(taus_plot, function(x)rq(log10(si) ~ log10(volume), data=treestats_small_ever, tau=x))
-qf_small_deci_plot <- lapply(taus_plot, function(x)rq(log10(si) ~ log10(volume), data=treestats_small_deci, tau=x))
-qf_small_plot <- lapply(taus_plot, function(x)rq(log10(si) ~ log10(volume), data=treestats_small, tau=x))
-qf_large_plot <- lapply(taus_plot, function(x)rq(log10(si) ~ log10(volume), data=treestats_large, tau=x))
+taus_plot <- c(0.05, 0.25, 0.75, 0.95)
+qf_plot <- lapply(taus_plot, function(x)rq(log10(si) ~ log10(volume), data=treestats, tau=x))
 
 
 # For plotting, and checking ranges
